@@ -16,7 +16,7 @@ export const CONFIG = {
   // Google Sheet recording for "yes" replies: paste the Apps Script web app URL here (steps in README). Empty = not recorded.
   sheetUrl: "https://script.google.com/macros/s/AKfycbyxz-vY3LMr3xybT1BdRsvPtnIoCriNpJ30tkYv8QYWvNynLkIL6fsHn7nqZk4z2pL_uA/exec",
   music: "",               // e.g. "/audio/nasheed.mp3" (put the file in public/audio). Empty = no music button.
-  siteUrl: "",             // final site address, used by the Share button. Empty = current address.
+  siteUrl: "https://atifwedsnargis.fullstackcity.in",             // final site address, used by the Share button. Empty = current address.
 
   // The countdown and the scratch card use this moment. TODO: confirm the year.
   countdownTo: "2027-10-17T19:00:00+05:30",
