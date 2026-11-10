@@ -153,7 +153,7 @@ try {
 
   if (what === "admin" || what === "all") {
     const p = await chrome.page();
-    await p.goto(SITE + "/admin"); await p.until(`document.querySelector("#pass")`); await sleep(500);
+    await p.goto(SITE + "/admin"); await p.until(`document.querySelector("#usepass")`); await p.eval(`document.querySelector("#usepass").click()`); await p.until(`document.querySelector("#pass")`); await sleep(500);
     await p.shot(`${OUT}admin-0-login.png`);
     check("/admin has noindex and no wedding theme", await p.eval(`document.querySelector('meta[name="robots"]')?.content.includes("noindex") && !document.querySelector(".stage")`));
     await p.eval(`document.querySelector("#pass").focus()`); await p.type("wrong-password"); await p.eval(`document.querySelector("form").requestSubmit()`);
@@ -217,7 +217,7 @@ try {
     check("Download CSV saves a file containing the RSVP", await p.eval(`window.__names[0]`) === "wedding-guests.csv" && /Khan Sahab & Family,919876543210,family,"barat, walima",\w+,[^,]*,[^,]+,yes,no,4,Mubarak ho! Allah bless you both\./.test(csv), csv.split("\n").slice(0, 3).join(" ⏎ "));
     // expired / invalid token -> back to login
     await p.eval(`localStorage.setItem("wd-admin-token", JSON.stringify("bad.token.value"))`); await p.goto(SITE + "/admin");
-    await p.until(`document.querySelector("#pass")`, 10000, "login after 401"); check("401 returns to the login screen", true, await p.eval(`document.querySelector(".card p").textContent`));
+    await p.until(`document.querySelector("#email")`, 10000, "login after 401"); check("401 returns to the login screen", true, await p.eval(`document.querySelector(".card p").textContent`));
     if (p.logs.length) console.log("admin logs:\n" + [...new Set(p.logs)].join("\n"));
     await p.close();
   }

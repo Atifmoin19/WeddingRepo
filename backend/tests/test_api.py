@@ -19,7 +19,9 @@ def test_admin_routes_require_token(client):
     for method, path in [("get", "/admin/settings"), ("put", "/admin/settings"),
                          ("get", "/admin/guests"), ("post", "/admin/guests"),
                          ("post", "/admin/guests/bulk"), ("patch", "/admin/guests/x"),
-                         ("delete", "/admin/guests/x"), ("get", "/admin/export.csv")]:
+                         ("delete", "/admin/guests/x"), ("get", "/admin/export.csv"),
+                         ("get", "/admin/me"), ("get", "/admin/admins"), ("post", "/admin/admins"),
+                         ("patch", "/admin/admins/x"), ("delete", "/admin/admins/x")]:
         assert getattr(client, method)(path).status_code == 401, (method, path)
     bad = {"Authorization": "Bearer garbage"}
     assert client.get("/admin/guests", headers=bad).status_code == 401
@@ -180,9 +182,10 @@ def test_csv_export(client, auth):
     assert "attachment" in r.headers["content-disposition"]
     rows = list(csv.reader(io.StringIO(r.text)))
     assert rows[0] == ["name", "phone", "party", "invited", "link code", "sent", "opened",
-                       "attending barat", "attending walima", "headcount", "message", "rsvp time"]
+                       "attending barat", "attending walima", "headcount", "message", "rsvp time", "added by"]
     row = dict(zip(rows[0], rows[1]))
     assert row["name"] == "'=HYPERLINK(\"x\")"
     assert row["message"] == "'+cmd, \"q\""
     assert row["attending barat"] == "yes" and row["attending walima"] == "no"
+    assert row["added by"] == "Atif"
     assert row["headcount"] == "3" and row["link code"] == g["code"] and row["phone"] == "919876543210"

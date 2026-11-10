@@ -35,3 +35,24 @@ def jwt_expire_minutes() -> int:
 
 def allowed_origins() -> list[str]:
     return [o.strip() for o in os.environ.get("ALLOWED_ORIGINS", "").split(",") if o.strip()]
+
+
+def owner_email() -> str:
+    """Configured owner email, lower-case. Empty when OWNER_EMAIL is unset."""
+    return os.environ.get("OWNER_EMAIL", "").strip().lower()
+
+
+def owner_name() -> str:
+    return os.environ.get("OWNER_NAME", "").strip() or "Owner"
+
+
+def resend_api_key() -> str:
+    return os.environ.get("RESEND_API_KEY", "").strip()
+
+
+def email_from() -> str:
+    return os.environ.get("EMAIL_FROM", "").strip() or "Atif & Nargis <wedding@fullstackcity.in>"
+
+
+def otp_debug() -> bool:
+    return os.environ.get("OTP_DEBUG", "").strip() == "1"

@@ -28,7 +28,7 @@ function PartyToggle({ value, onChange, label }) {
   );
 }
 
-function GuestRow({ g, picked, onPick, onPatch, onSend, onRemove, labels }) {
+function GuestRow({ g, picked, onPick, onPatch, onSend, onRemove, labels, showAdder }) {
   const [name, setName] = useState(g.name);
   const [phone, setPhone] = useState(g.phone);
   const [confirm, setConfirm] = useState(false);
@@ -78,6 +78,7 @@ function GuestRow({ g, picked, onPick, onPatch, onSend, onRemove, labels }) {
           : <span className="chip">No reply</span>}
         {g.rsvp && g.party === "family" && Object.values(att).some(Boolean) && <span className="chip on">{g.rsvp.headcount} coming</span>}
       </div>
+      {showAdder && g.addedBy && <div className="meta addedby">added by {g.addedBy.name}</div>}
       <div className="meta">
         <button className="small" type="button" onClick={() => onSend(g)}>{g.sentAt ? "Send again" : "Send"}</button>
         <button className="small" type="button" onClick={copy}>{copied ? "Copied" : "Copy link"}</button>
@@ -91,11 +92,16 @@ function GuestRow({ g, picked, onPick, onPatch, onSend, onRemove, labels }) {
   );
 }
 
-export default function Guests({ guests, setGuests, settings, call }) {
+export default function Guests({ guests, setGuests, settings, call, me }) {
   const labels = useMemo(() => Object.fromEntries(GROUPS.map((g) => [g, groupLabel(settings.events, g)])), [settings]);
   const fallbackMsg = defaultMessage(settings.couple);
   const [message, setMessage] = useState(() => store.get(K_MSG) || fallbackMsg);
   const [filter, setFilter] = useState("");
+  const isOwner = me?.role === "owner";
+  const [by, setBy] = useState("");                             // owner only: show one admin's guests
+  const adders = useMemo(() => [...new Map(guests.filter((g) => g.addedBy).map((g) => [g.addedBy.id, g.addedBy.name])).entries()]
+    .sort((a, b) => a[1].localeCompare(b[1])), [guests]);
+  const byId = adders.some(([id]) => id === by) ? by : "";      // that admin's last guest may have gone
   const [skip, setSkip] = useState(() => new Set());          // guests left out of "Send next"
   const [form, setForm] = useState({ name: "", phone: "", party: "family", barat: true, walima: true });
   const [note, setNote] = useState({ text: "", bad: false });
@@ -158,7 +164,7 @@ export default function Guests({ guests, setGuests, settings, call }) {
   const saveMessage = (v) => { const m = v.includes("{link}") ? v : `${v.trimEnd()}\n{link}`; setMessage(m); store.set(K_MSG, m); };
 
   const q = filter.trim().toLowerCase();
-  const shown = guests.filter((g) => !q || `${g.name} ${g.phone}`.toLowerCase().includes(q));
+  const shown = guests.filter((g) => (!byId || g.addedBy?.id === byId) && (!q || `${g.name} ${g.phone}`.toLowerCase().includes(q)));
   const queue = guests.filter((g) => !skip.has(g.id) && !g.sentAt && g.phone);
   const allPicked = shown.length > 0 && shown.every((g) => !skip.has(g.id));
   const count = (f) => guests.filter(f).length;
@@ -197,14 +203,20 @@ export default function Guests({ guests, setGuests, settings, call }) {
       <div className="card">
         <div className="row">
           <input id="search" placeholder="Search guests" aria-label="Search guests" value={filter} onChange={(e) => setFilter(e.target.value)} />
+          {isOwner && adders.length > 1 && (
+            <select id="byadmin" aria-label="Show guests added by" value={byId} onChange={(e) => setBy(e.target.value)}>
+              <option value="">Added by anyone</option>
+              {adders.map(([id, name]) => <option key={id} value={id}>Added by {name}</option>)}
+            </select>
+          )}
           <button className="small" type="button" style={{ flex: "0 0 auto" }} disabled={!shown.length}
             onClick={() => setSkip((s) => { const n = new Set(s); shown.forEach((g) => (allPicked ? n.add(g.id) : n.delete(g.id))); return n; })}>{allPicked ? "Unselect all" : "Select all"}</button>
         </div>
         <div>
           {shown.length
-            ? shown.map((g) => <GuestRow key={g.id} g={g} labels={labels} picked={!skip.has(g.id)} onPatch={onPatch} onSend={onSend} onRemove={onRemove}
+            ? shown.map((g) => <GuestRow key={g.id} g={g} labels={labels} showAdder={isOwner} picked={!skip.has(g.id)} onPatch={onPatch} onSend={onSend} onRemove={onRemove}
               onPick={(id, on) => setSkip((s) => { const n = new Set(s); if (on) n.delete(id); else n.add(id); return n; })} />)
-            : <p className="empty">{guests.length ? "No guest matches that search." : "No guests yet. Add them above."}</p>}
+            : <p className="empty">{guests.length ? (byId && !q ? "No guests added by this admin." : "No guest matches that search.") : "No guests yet. Add them above."}</p>}
         </div>
       </div>
       <p>The name in each box is what is printed on that guest's envelope and card. Ticked guests are included in "Send next".</p>

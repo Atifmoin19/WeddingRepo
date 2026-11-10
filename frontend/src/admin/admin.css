@@ -55,3 +55,14 @@ label.chk{display:flex;gap:8px;align-items:center;font-size:14px;color:var(--sof
 .reply-item .who{font-weight:600}
 .reply-item .said{font-style:italic;color:var(--ink);font-size:15px;overflow-wrap:anywhere}
 .savebar{position:sticky;bottom:0;background:var(--bg);padding:10px 0;display:flex;flex-direction:column;gap:8px}
+.head .who{display:flex;align-items:center;gap:10px;min-width:0;font-size:14px;color:var(--soft)}
+.head .who span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.adm button.link{border:0;background:none;padding:6px 0;font-weight:500;font-size:13px;color:var(--gold-d);text-decoration:underline;align-self:flex-start}
+.adm input.code{font-size:26px;font-weight:600;letter-spacing:.4em;text-align:center;font-variant-numeric:tabular-nums}
+.adm input.code::placeholder{color:var(--line)}
+.guest .meta.addedby{font-size:12px}
+.admin-item{padding:12px 0;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:6px}
+.admin-item:first-child{border-top:0}
+.admin-item .who{font-weight:600}
+.admin-item .contact{overflow-wrap:anywhere}
+#byadmin{font-size:14px;padding-right:6px}

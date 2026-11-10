@@ -6,7 +6,10 @@ import jwt
 from fastapi import Depends, HTTPException
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
+from sqlalchemy.orm import Session
+
 from . import config
+from .db import Admin, get_db
 
 _bearer = HTTPBearer(auto_error=False)
 
@@ -25,19 +28,30 @@ def check_password(password: str) -> bool:
     return False
 
 
-def make_token() -> tuple[str, int]:
+def make_token(admin_id: str) -> tuple[str, int]:
     minutes = config.jwt_expire_minutes()
     exp = datetime.now(UTC) + timedelta(minutes=minutes)
-    token = jwt.encode({"sub": "admin", "exp": exp}, config.jwt_secret(), algorithm="HS256")
+    token = jwt.encode({"sub": admin_id, "exp": exp}, config.jwt_secret(), algorithm="HS256")
     return token, minutes * 60
 
 
-def require_admin(creds: HTTPAuthorizationCredentials | None = Depends(_bearer)) -> None:
+def require_admin(creds: HTTPAuthorizationCredentials | None = Depends(_bearer),
+                  db: Session = Depends(get_db)) -> Admin:
+    """The logged-in admin. A deleted or deactivated admin's token stops working at once."""
     if creds is None:
         raise HTTPException(401, "Not authenticated", headers={"WWW-Authenticate": "Bearer"})
     try:
         payload = jwt.decode(creds.credentials, config.jwt_secret(), algorithms=["HS256"])
     except jwt.PyJWTError:
         raise HTTPException(401, "Invalid or expired token", headers={"WWW-Authenticate": "Bearer"})
-    if payload.get("sub") != "admin":
+    sub = payload.get("sub")
+    admin = db.get(Admin, sub) if isinstance(sub, str) else None
+    if admin is None or not admin.active:
         raise HTTPException(401, "Invalid token", headers={"WWW-Authenticate": "Bearer"})
+    return admin
+
+
+def require_owner(me: Admin = Depends(require_admin)) -> Admin:
+    if me.role != "owner":
+        raise HTTPException(403, "Only the owner can do this")
+    return me

@@ -1,11 +1,14 @@
+import logging
 import secrets
 import uuid
 from datetime import UTC, datetime
 
-from sqlalchemy import JSON, DateTime, ForeignKey, Integer, String, Text, create_engine, select
+from sqlalchemy import JSON, Boolean, DateTime, ForeignKey, Integer, String, Text, create_engine, select
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship, sessionmaker
 
 from . import config
+
+log = logging.getLogger("wedding")
 
 SEED_SETTINGS = {
     "couple": {
@@ -49,6 +52,26 @@ class Setting(Base):
     data: Mapped[dict] = mapped_column(JSON)
 
 
+class Admin(Base):
+    __tablename__ = "wedding_admins"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    name: Mapped[str] = mapped_column(String(200))
+    email: Mapped[str] = mapped_column(String(254), unique=True, index=True)  # lower-case
+    phone: Mapped[str] = mapped_column(String(40), default="")
+    role: Mapped[str] = mapped_column(String(10), default="admin")  # "owner" | "admin"
+    active: Mapped[bool] = mapped_column(Boolean, default=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+
+
+class OtpCode(Base):
+    """At most one pending login code per email; only its HMAC is stored."""
+    __tablename__ = "wedding_otp_codes"
+    email: Mapped[str] = mapped_column(String(254), primary_key=True)
+    code_hash: Mapped[str] = mapped_column(String(64))
+    attempts: Mapped[int] = mapped_column(Integer, default=0)
+    expires_at: Mapped[datetime] = mapped_column(DateTime)
+
+
 class Guest(Base):
     __tablename__ = "wedding_guests"
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
@@ -60,6 +83,8 @@ class Guest(Base):
     sent_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     opened_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+    added_by: Mapped[str | None] = mapped_column(ForeignKey("wedding_admins.id"), nullable=True, index=True)
+    adder: Mapped["Admin | None"] = relationship()
     rsvp: Mapped["Rsvp | None"] = relationship(back_populates="guest", uselist=False,
                                                cascade="all, delete-orphan")
 
@@ -95,6 +120,32 @@ def init_db() -> None:
         if db.scalar(select(Setting.id).limit(1)) is None:
             db.add(Setting(id=1, data=SEED_SETTINGS))
             db.commit()
+        ensure_owner(db)
+
+
+def get_owner(db) -> "Admin | None":
+    return db.scalar(select(Admin).where(Admin.role == "owner").order_by(Admin.created_at).limit(1))
+
+
+def ensure_owner(db) -> None:
+    """Keeps exactly one owner record. Created from OWNER_EMAIL (owner@localhost when unset)."""
+    configured = config.owner_email()
+    owner = get_owner(db)
+    if owner is None:
+        email = configured or "owner@localhost"
+        existing = db.scalar(select(Admin).where(Admin.email == email))
+        if existing:  # that person is already an admin: they become the owner
+            existing.role, existing.active = "owner", True
+        else:
+            db.add(Admin(name=config.owner_name(), email=email, role="owner", active=True))
+        db.commit()
+    elif configured and owner.email != configured:
+        # OWNER_EMAIL changed: the one owner record follows it, never a second owner.
+        if db.scalar(select(Admin.id).where(Admin.email == configured)) is None:
+            owner.email = configured
+            db.commit()
+        else:
+            log.warning("OWNER_EMAIL belongs to another admin; the owner record was left unchanged")
 
 
 def new_code(db) -> str:

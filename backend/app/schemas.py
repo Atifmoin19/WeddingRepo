@@ -149,6 +149,77 @@ class LoginIn(BaseModel):
     password: str = Field(max_length=200)
 
 
+# ---- admins and OTP ----
+def _email(v: str, strict: bool) -> str:
+    v = v.strip().lower()
+    # strict (new admins) wants a dot in the domain; login also accepts the local owner@localhost
+    if not re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+" if strict else r"[^@\s]+@[^@\s]+", v):
+        raise ValueError("not a valid email address")
+    return v
+
+
+class OtpRequestIn(BaseModel):
+    email: str = Field(max_length=254)
+
+    @field_validator("email")
+    @classmethod
+    def _e(cls, v: str) -> str:
+        return _email(v, strict=False)
+
+
+class OtpVerifyIn(OtpRequestIn):
+    code: str = Field(max_length=12)
+
+    @field_validator("code")
+    @classmethod
+    def _c(cls, v: str) -> str:
+        return re.sub(r"\s", "", v)
+
+
+class AdminIn(BaseModel):
+    name: str = Field(min_length=1, max_length=200)
+    email: str = Field(max_length=254)
+    phone: str | None = Field(default=None, max_length=40)
+
+    @field_validator("name")
+    @classmethod
+    def _name(cls, v: str) -> str:
+        v = v.strip()
+        if not v:
+            raise ValueError("name is required")
+        return v
+
+    @field_validator("email")
+    @classmethod
+    def _e(cls, v: str) -> str:
+        return _email(v, strict=True)
+
+    @field_validator("phone")
+    @classmethod
+    def _phone(cls, v):
+        return normalize_phone(v)
+
+
+class AdminPatch(BaseModel):
+    name: str | None = Field(default=None, min_length=1, max_length=200)
+    phone: str | None = Field(default=None, max_length=40)
+    active: bool | None = None
+
+    @field_validator("name")
+    @classmethod
+    def _name(cls, v):
+        if v is not None:
+            v = v.strip()
+            if not v:
+                raise ValueError("name is required")
+        return v
+
+    @field_validator("phone")
+    @classmethod
+    def _phone(cls, v):
+        return normalize_phone(v) if v is not None else None
+
+
 # ---- output helpers (camelCase dicts) ----
 def iso(dt: datetime | None) -> str | None:
     return dt.isoformat() + "Z" if dt else None
@@ -161,7 +232,22 @@ def rsvp_out(r) -> dict | None:
             "updatedAt": iso(r.updated_at)}
 
 
-def guest_out(g) -> dict:
-    return {"id": g.id, "code": g.code, "name": g.name, "phone": g.phone, "party": g.party,
-            "invited": g.invited, "sentAt": iso(g.sent_at), "openedAt": iso(g.opened_at),
-            "createdAt": iso(g.created_at), "rsvp": rsvp_out(g.rsvp)}
+def guest_out(g, with_added_by: bool = False) -> dict:
+    out = {"id": g.id, "code": g.code, "name": g.name, "phone": g.phone, "party": g.party,
+           "invited": g.invited, "sentAt": iso(g.sent_at), "openedAt": iso(g.opened_at),
+           "createdAt": iso(g.created_at), "rsvp": rsvp_out(g.rsvp)}
+    if with_added_by:  # owner only
+        out["addedBy"] = {"id": g.adder.id, "name": g.adder.name} if g.adder else None
+    return out
+
+
+def admin_brief(a) -> dict:
+    return {"id": a.id, "name": a.name, "email": a.email, "role": a.role}
+
+
+def me_out(a) -> dict:
+    return {**admin_brief(a), "phone": a.phone}
+
+
+def admin_out(a, guest_count: int) -> dict:
+    return {**me_out(a), "active": a.active, "createdAt": iso(a.created_at), "guestCount": guest_count}

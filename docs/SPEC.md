@@ -100,3 +100,43 @@ API responses use camelCase keys.
 - `/admin`: password login, then tabs: Guests (add, import from phone contacts or .vcf, edit name/party/invited, send on WhatsApp, copy link,
   status chips for sent / opened / replied), Event details (edit settings), Replies (totals per group, headcount, messages, CSV download).
 - API base URL comes from `VITE_API_BASE_URL`.
+
+## Admins and OTP login (v2.1)
+
+Several people can use the admin panel. They log in with their email and a 6-digit code sent by email.
+
+**admin** (`wedding_admins`): `id` (uuid), `name`, `email` (unique, stored lower-case), `phone` (digits, optional), `role` (`"owner"` | `"admin"`),
+`active` (bool), `created_at`. Guests get `added_by` (admin id, nullable).
+
+- The owner is created on startup from env `OWNER_EMAIL` (and optional `OWNER_NAME`) if no admin with that email exists. There is always exactly one way
+  to be owner: that record. The owner cannot be deleted, deactivated or demoted through the API.
+- Roles:
+  - `owner`: everything. Sees all guests (each with `addedBy: { id, name }`), edits settings, manages admins.
+  - `admin`: only guests they added themselves (list, create, bulk, patch, delete, export, replies). Guests they create get `added_by` = their id.
+    Touching another admin's guest returns 404. `GET /admin/settings` is allowed (the panel needs event names); `PUT /admin/settings` and all
+    `/admin/admins` routes return 403.
+
+**OTP**: 6 digits from `secrets`, stored only as an HMAC-SHA256 with `JWT_SECRET`, valid 10 minutes, single use, at most 5 wrong attempts per code,
+a new request replaces the old code. Request limits per email: 1 per 60 s and 5 per hour; per IP: 10 per hour.
+
+| Method | Path | Result |
+|---|---|---|
+| POST | `/admin/otp/request` | body `{ "email" }` -> always `200 { "sent": true }` for a well-formed email, whether or not it belongs to an admin (no account enumeration). A code is emailed only to an active admin. 429 when rate limited. |
+| POST | `/admin/otp/verify` | body `{ "email", "code" }` -> `{ "token", "expiresIn", "admin": { "id", "name", "email", "role" } }`. 401 for a wrong, expired or used code (same message for all). |
+| GET | `/admin/me` | the logged-in admin `{ id, name, email, phone, role }` |
+| GET | `/admin/admins` | owner only: all admins with `guestCount` |
+| POST | `/admin/admins` | owner only: body `{ name, email, phone? }` -> admin (role `admin`). 409 if the email exists. |
+| PATCH | `/admin/admins/{id}` | owner only: any of `name, phone, active`. |
+| DELETE | `/admin/admins/{id}` | owner only: 204. Their guests stay and become the owner's (`added_by` = owner id). |
+
+- The JWT carries the admin id. Every admin route loads the admin and rejects (401) a missing, deleted or inactive one, so removing an admin ends their session.
+- `POST /admin/login` (password) stays as an owner-only fallback: it works only when `ADMIN_PASSWORD_HASH`/`ADMIN_PASSWORD` is set and logs in as the owner record.
+  If `OWNER_EMAIL` is unset, the owner record is created with the email `owner@localhost` so password login still works locally.
+- Email is sent through Resend: `POST https://api.resend.com/emails` with `Authorization: Bearer $RESEND_API_KEY`, JSON `{ from, to: [email], subject, text, html }`.
+  New env vars: `RESEND_API_KEY`, `EMAIL_FROM` (default `Atif & Nargis <wedding@fullstackcity.in>`), `OWNER_EMAIL`, `OWNER_NAME`, `OTP_DEBUG`.
+  When `RESEND_API_KEY` is unset: if `OTP_DEBUG=1` the code is printed to the server log (local use), otherwise no code is created and the request still answers 200.
+  Never log the code otherwise, and never return it in a response.
+- CSV export gains an "added by" column for the owner.
+
+Admin panel: login screen asks for email, then the code ("Resend code" after 60 s), with a small "Use password instead" link. The owner gets an
+**Admins** tab (add by name, email, phone; deactivate; remove) and sees who added each guest. Other admins do not see the Event details or Admins tabs.
