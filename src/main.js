@@ -315,7 +315,7 @@ function addToCalendar(e){
 $$("[data-cal]").forEach(a=>a.addEventListener("click",ev=>{ev.preventDefault();addToCalendar(CONFIG.events.find(x=>x.name===a.dataset.cal)||main)}));
 
 /* share */
-$("#share").addEventListener("click",async e=>{const data={title:document.title,text:`${CONFIG.groom} & ${CONFIG.bride} - you are cordially invited. Tap to open your invitation.`,url:CONFIG.siteUrl||location.origin+location.pathname};
+$("#share").addEventListener("click",async e=>{const data={title:document.title,text:`Assalamu Alaikum! With the blessings of Allah, you are cordially invited to the Walima of ${CONFIG.groom} & ${CONFIG.bride}. Tap to open your invitation:`,url:CONFIG.siteUrl||location.origin+location.pathname};
   if(navigator.share){try{await navigator.share(data);return}catch(err){if(err.name==="AbortError")return}}
   try{await navigator.clipboard.writeText(data.url);e.target.textContent="Link copied"}catch(_){}});
 

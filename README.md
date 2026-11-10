@@ -29,7 +29,7 @@ A guest taps "InshaAllah, Yes", enters their name (required) and an optional mes
 
 The files in `public/images/` (frames, couple, envelope, seal) are placeholder art taken from a reference site.
 Replace them with your own artwork, keeping the same file names and sizes, before publishing.
-Also add a share preview image at `public/og.jpg` (1200x630).
+The share preview image is `public/og.jpg` (1200x630). Its names and date are baked into the picture, and the share title and description are in the `<head>` of `index.html`; update both if details change.
 
 ## Deploy
 
