@@ -1,0 +1,59 @@
+<!doctype html><meta charset="utf-8">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Allura&family=Amiri:wght@400;700&family=Cinzel:wght@400;500;600&family=Cormorant+Garamond:ital,wght@0,500;1,400&display=swap">
+<style>
+*{box-sizing:border-box;margin:0}
+html,body{width:1200px;height:630px;overflow:hidden}
+body{position:relative;font-family:"Cormorant Garamond",serif;color:#4a3420;
+  background:radial-gradient(60% 75% at 50% 48%,#fffaf0 0%,#f6eedd 55%,#e6d8bc 100%)}
+.noise{position:absolute;inset:0;opacity:.5;mix-blend-mode:multiply}
+.b1{position:absolute;inset:22px;border:2px solid #b08a45;border-radius:6px}
+.b2{position:absolute;inset:32px;border:1px solid #b08a4590;border-radius:3px}
+.corner{position:absolute;width:150px;height:150px}
+.corner.tl{left:14px;top:14px}.corner.tr{right:14px;top:14px;transform:scaleX(-1)}
+.corner.bl{left:14px;bottom:14px;transform:scaleY(-1)}.corner.br{right:14px;bottom:14px;transform:scale(-1,-1)}
+.side{position:absolute;top:50%;width:150px;height:330px;transform:translateY(-50%)}
+.side.l{left:112px}.side.r{right:112px;transform:translateY(-50%) scaleX(-1)}
+.mid{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;text-align:center;padding-top:6px}
+.gold{background:linear-gradient(100deg,#7a5626,#a67c3d 25%,#d9b872 48%,#a67c3d 66%,#7a5626);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 1.5px 0 #fff) drop-shadow(0 -1px 0 #7a562650)}
+.ar{font:400 44px/1.5 "Amiri",serif;direction:rtl}
+.eye{font:500 17px "Cinzel",serif;letter-spacing:.42em;color:#a67c3d;text-transform:uppercase;margin-top:2px}
+.names{font:400 132px/1.25 "Allura",cursive;padding:0 .2em;margin:-14px 0 -18px}
+.names small{font-size:.58em}
+.what{font:600 27px "Cinzel",serif;letter-spacing:.34em;color:#4a3420;text-transform:uppercase}
+.when{font:italic 400 30px "Cormorant Garamond",serif;color:#6b4f3a}
+.orn{width:300px;height:24px;margin:2px 0}
+</style>
+<svg class="noise" width="1200" height="630"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency=".8" numOctaves="2" seed="3"/><feColorMatrix values="0 0 0 0 .55  0 0 0 0 .45  0 0 0 0 .3  0 0 0 .35 -.08"/></filter><rect width="1200" height="630" filter="url(#n)"/></svg>
+<div class="b1"></div><div class="b2"></div>
+
+<svg style="display:none"><defs>
+ <g id="cr" fill="none" stroke="#a67c3d" stroke-width="1.6" stroke-linecap="round">
+  <path d="M10 140 V46 Q10 10 46 10 H140"/>
+  <path d="M24 120 V56 Q24 24 56 24 H120" stroke-opacity=".55"/>
+  <path d="M40 40 q26 -4 38 16 q-20 2 -30 -6 q10 20 0 34 q-14 -16 -8 -30" fill="#efe2c4"/>
+  <path d="M40 40 q-4 26 16 38" /><circle cx="40" cy="40" r="5" fill="#a67c3d" stroke="none"/>
+  <path d="M90 26 q10 8 22 2 M26 90 q8 10 2 22" />
+  <circle cx="118" cy="26" r="2.4" fill="#a67c3d" stroke="none"/><circle cx="26" cy="118" r="2.4" fill="#a67c3d" stroke="none"/>
+ </g>
+ <g id="sd" fill="#efe2c4" stroke="#a67c3d" stroke-width="1.4" stroke-linecap="round">
+  <path d="M75 320 C40 250 40 90 75 10" fill="none"/>
+  <ellipse cx="50" cy="60" rx="17" ry="6.5" transform="rotate(-58 50 60)"/><ellipse cx="78" cy="48" rx="17" ry="6.5" transform="rotate(-118 78 48)"/>
+  <ellipse cx="38" cy="112" rx="18" ry="7" transform="rotate(-68 38 112)"/><ellipse cx="70" cy="104" rx="18" ry="7" transform="rotate(-112 70 104)"/>
+  <ellipse cx="32" cy="168" rx="18" ry="7" transform="rotate(-88 32 168)"/><ellipse cx="66" cy="165" rx="18" ry="7" transform="rotate(-92 66 165)"/>
+  <ellipse cx="38" cy="224" rx="18" ry="7" transform="rotate(-112 38 224)"/><ellipse cx="70" cy="230" rx="18" ry="7" transform="rotate(-68 70 230)"/>
+  <ellipse cx="50" cy="276" rx="17" ry="6.5" transform="rotate(-122 50 276)"/><ellipse cx="80" cy="288" rx="17" ry="6.5" transform="rotate(-62 80 288)"/>
+  <circle cx="75" cy="10" r="4" fill="#a67c3d" stroke="none"/><circle cx="75" cy="320" r="4" fill="#a67c3d" stroke="none"/>
+ </g>
+</defs></svg>
+<svg class="corner tl" viewBox="0 0 150 150"><use href="#cr"/></svg><svg class="corner tr" viewBox="0 0 150 150"><use href="#cr"/></svg>
+<svg class="corner bl" viewBox="0 0 150 150"><use href="#cr"/></svg><svg class="corner br" viewBox="0 0 150 150"><use href="#cr"/></svg>
+<svg class="side l" viewBox="0 0 150 330"><use href="#sd"/></svg><svg class="side r" viewBox="0 0 150 330"><use href="#sd"/></svg>
+
+<div class="mid">
+  <p class="ar gold">بِسْمِ ٱللَّٰهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ</p>
+  <p class="eye">You are cordially invited</p>
+  <p class="names gold">Atif <small>&amp;</small> Nargis</p>
+  <svg class="orn" viewBox="0 0 300 24"><path d="M0 12H128M172 12H300" stroke="#a67c3d" stroke-width="1.4"/><path d="M150 1l4.5 6.5 8 1.5-6 5 1.6 8-8.1-3.6-8.1 3.6 1.6-8-6-5 8-1.5z" fill="#a67c3d"/><circle cx="134" cy="12" r="2.6" fill="#a67c3d"/><circle cx="166" cy="12" r="2.6" fill="#a67c3d"/></svg>
+  <p class="what">Dawat-e-Walima</p>
+  <p class="when">Monday, 18th October 2027 · Hotel Giriraj, Basti</p>
+</div>
