@@ -7,3 +7,9 @@ dist
 *.log
 .vscode
 .idea
+
+# invite signing key, admin passphrase and guest lists: never commit
+.invite-key.json
+.admin-passphrase.txt
+guests.csv
+guest-links.csv

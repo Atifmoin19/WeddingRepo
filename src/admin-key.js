@@ -1,0 +1,2 @@
+// Signing key for the admin page, encrypted with the host's passphrase. Written by scripts/invite.mjs.
+export const ADMIN_KEY = {"iterations":250000,"salt":"X2Y8VS4gdEfOgiaqd3wVDA==","iv":"qlhTIROLVmb+lmKY","data":"dneD7bzjIbJinT3iiQWnG61WNG5fQPyRhrcYxRU7y/1x39N+2vAuFoiJPBZjd2vsfc/M7iPwt2UOKFY5Zb0vEe6ZnAM/KTiFwSNlb8YhJR7Q+z8o6WjNlcUptJM2bOtQ3TsmgOurYds3e+IPhrZoBPARiEwvGbCJOG/zGk8gPfWISDC8uy93WrJuWaIudo50qzYzqcrA5DkZjzw/aj3o83c8ilbRMEhowR2P+DYL041+5ql4kyssiJiVA3YlsgSKnypsailww8nMTFB7tbS9D1cIaUOxVRk30xQqDMCK"};

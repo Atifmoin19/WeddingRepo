@@ -1,7 +1,8 @@
 import "./style.css";
 import { CONFIG } from "./config.js";
+import { readInvite } from "./invite.js";
 
-(function(){
+function startInvite(){
 
 const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
 const pad=n=>String(n).padStart(2,"0");
@@ -189,7 +190,8 @@ const S=[
    <h2 class="script gold" style="font-size:clamp(36px,10.5cqw,46px);margin-top:4px">${chars(CONFIG.groom+" & "+CONFIG.bride,1.9,.05)}</h2>
    ${R(2.6,`<p class="caps" style="font-size:10px;color:var(--gold)">${k("hashtag")}</p>`)}
    ${R(2.9,`<p class="sm" style="margin-top:4px">With warm regards<br><b>${k("hosts")}</b></p>`)}
-   ${R(3.1,`<button class="btn solid" type="button" id="share" style="margin-top:8px">Share Invitation</button>`)}`}
+   ${R(3.1,`<button class="btn solid" type="button" id="card" style="margin-top:8px">Download Invitation Card</button>`)}
+   ${CONFIG.requireInvite?"":R(3.3,`<button class="btn" type="button" id="share">Share Invitation</button>`)}`}
 ];
 
 const deck=$("#deck");
@@ -275,6 +277,7 @@ gift.addEventListener("click",toggleGift);gb.addEventListener("click",toggleGift
 
 /* RSVP. Yes: name + optional message, saved to the Google Sheet. No: name + optional message, sent on WhatsApp. */
 const f=$("#duaf"),fields=$("#rsvpfields"),go=$("#rsvpgo"),err=$("#rsvperr");let attending=null;
+if(CONFIG.requireInvite&&CONFIG.guest)f.n.value=CONFIG.guest;
 const waLink=msg=>`https://wa.me/${(CONFIG.whatsapp||"").replace(/\D/g,"")}?text=${encodeURIComponent(msg)}`;
 $$(".seg button",f).forEach(b=>b.addEventListener("click",()=>{attending=b.dataset.a;
   $$(".seg button",f).forEach(x=>x.setAttribute("aria-pressed",x===b));
@@ -315,8 +318,30 @@ function addToCalendar(e){
 $$("[data-cal]").forEach(a=>a.addEventListener("click",ev=>{ev.preventDefault();addToCalendar(CONFIG.events.find(x=>x.name===a.dataset.cal)||main)}));
 
 /* share */
-$("#share").addEventListener("click",async e=>{const data={title:document.title,text:`Assalamu Alaikum! With the blessings of Allah, you are cordially invited to the Walima of ${CONFIG.groom} & ${CONFIG.bride}. Tap to open your invitation:`,url:CONFIG.siteUrl||location.origin+location.pathname};
+$("#share")?.addEventListener("click",async e=>{const data={title:document.title,text:`Assalamu Alaikum! With the blessings of Allah, you are cordially invited to the Walima of ${CONFIG.groom} & ${CONFIG.bride}. Tap to open your invitation:`,url:CONFIG.siteUrl||location.origin+location.pathname};
   if(navigator.share){try{await navigator.share(data);return}catch(err){if(err.name==="AbortError")return}}
   try{await navigator.clipboard.writeText(data.url);e.target.textContent="Link copied"}catch(_){}});
 
+/* download the invitation card as a PDF, with this guest's name on the front */
+$("#card").addEventListener("click",async e=>{const b=e.currentTarget,label=b.textContent;b.disabled=true;b.textContent="Preparing your card…";
+  try{const {downloadCard}=await import("./card.js");await downloadCard(CONFIG);b.textContent="Card downloaded"}
+  catch(_){b.textContent="Could not make the card. Try again"}
+  setTimeout(()=>{b.disabled=false;b.textContent=label},2500)});
+
+}
+
+/* ===== entry: only a valid personal link opens the invitation ===== */
+function showLocked(){
+  document.querySelectorAll("#locked [data-k]").forEach(e=>e.textContent=CONFIG[e.dataset.k]??"");
+  document.getElementById("locked").hidden=false;
+  document.getElementById("intro").setAttribute("aria-hidden","true");
+}
+// Host shortcut: five quick taps on the bottom-left corner open the admin page.
+(function(){const spot=document.getElementById("hostspot");let taps=[];
+  spot?.addEventListener("click",()=>{const now=Date.now();taps=taps.filter(t=>now-t<3000);taps.push(now);if(taps.length>=5)location.href="/admin.html"})})();
+(async()=>{
+  const local=["localhost","127.0.0.1"].includes(location.hostname)&&new URLSearchParams(location.search).has("preview");
+  if(!CONFIG.requireInvite||local){CONFIG.guest=CONFIG.guest||"Family & Friends";startInvite();return}
+  const invite=await readInvite();
+  if(invite){CONFIG.guest=invite.name;startInvite()}else showLocked();
 })();

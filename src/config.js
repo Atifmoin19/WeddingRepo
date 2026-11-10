@@ -8,8 +8,10 @@ export const CONFIG = {
   brideParents: "D/o Mr. Amanullah Siddiqui & Mrs. Shakeela Bano",
   hosts: "Mrs. Darakhshan Begum & Family",
 
-  // Name shown on the envelope. A link like https://your-site/?to=Khan%20Sahab overrides it per guest.
-  guest: new URLSearchParams(location.search).get("to") || "Family & Friends",
+  // true: the site opens only from a personal invite link (made in /admin.html or with `npm run invite`).
+  // false: anyone with the address can open it, and the envelope says "Family & Friends".
+  requireInvite: true,
+  guest: "",              // filled in from the invite link
 
   hashtag: "#AtifWedsNargis",
   whatsapp: "917007136187", // RSVP number with country code (91 = India).

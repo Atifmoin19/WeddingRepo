@@ -236,4 +236,8 @@ body{margin:0;overflow:hidden;background:#2a2118;color:var(--ink);font-family:va
 .hint{animation:hint 2.4s ease-in-out infinite}
 @keyframes hint{0%,100%{opacity:.4}50%{opacity:1}}
 
+/* shown instead of the invite when there is no valid personal link */
+.locked{position:absolute;inset:0;z-index:30;display:flex;align-items:center;justify-content:center;padding:0 9%;container-type:size}
+.lockcard{display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;padding:34px 22px;border-radius:22px;background:radial-gradient(ellipse farthest-side at 50% 50%,#f9f4eafc 0%,#f9f4eaf2 70%,#f9f4eacc 100%);box-shadow:0 20px 50px -20px #4a3420a0,inset 0 0 0 1px #c9a45f80}
+#hostspot{position:absolute;left:0;bottom:0;width:56px;height:56px;z-index:40}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition-duration:.01s!important}}

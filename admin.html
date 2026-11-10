@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Guest links</title>
+<style>
+:root{--bg:#f6f0e4;--card:#fffdf8;--ink:#3d2c1c;--soft:#7a6650;--line:#dccdb2;--gold:#a67c3d;--gold-d:#7a5626;--ok:#2f7a4f;--bad:#a3202f}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;padding:max(16px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) 120px max(16px,env(safe-area-inset-left))}
+main{max-width:640px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+h1{font-size:22px;margin:6px 0 0}
+p{margin:0;color:var(--soft);font-size:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px}
+input,textarea{font:inherit;color:var(--ink);background:#fff;border:1px solid var(--line);border-radius:10px;padding:11px 12px;width:100%;min-width:0}
+textarea{min-height:110px;font-size:14px}
+input:focus-visible,textarea:focus-visible,button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+button{font:600 14px/1 inherit;font-family:inherit;border-radius:10px;border:1px solid var(--gold);background:#fff;color:var(--ink);padding:12px 14px;cursor:pointer}
+button.primary{background:linear-gradient(180deg,#e6cd8e,#b8914c);border-color:#a37f3e;color:#2d1e0b}
+button.small{padding:8px 10px;font-size:13px}
+button:disabled{opacity:.5;cursor:default}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.row>*{flex:1 1 140px}
+.err{color:var(--bad);font-weight:600}
+label.chk{display:flex;gap:8px;align-items:center;font-size:14px;color:var(--soft)}
+label.chk input{width:18px;height:18px;flex:none}
+.guest{display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px 10px;align-items:center;padding:12px 0;border-top:1px solid var(--line)}
+.guest:first-child{border-top:0}
+.guest input[type=checkbox]{width:20px;height:20px}
+.guest .meta{grid-column:2;display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:13px;color:var(--soft)}
+.chip{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:3px 7px;border-radius:999px;border:1px solid var(--line)}
+.chip.sent{color:var(--ok);border-color:var(--ok)}
+.bar{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);padding:12px max(16px,env(safe-area-inset-right)) calc(12px + env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left))}
+.bar div{max-width:640px;margin:0 auto;display:flex;gap:8px}
+.bar button{flex:1}
+.empty{text-align:center;padding:18px 0}
+</style>
+</head>
+<body>
+<main id="app"></main>
+<script type="module" src="/src/admin.js"></script>
+</body>
+</html>
